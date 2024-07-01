@@ -1,0 +1,57 @@
+{
+  "type": "module",
+  "name": "hono-session",
+  "version": "1.0.0",
+  "description": "Hono cookie-based session middleware",
+  "license": "MIT",
+  "author": {
+    "name": "Kael Watts-Deuchar",
+    "email": "kaelwd@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaelwd/hono-session.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kaelwd/hono-session/issues"
+  },
+  "scripts": {
+    "build": "pkgroll --sourcemap",
+    "lint": "eslint src",
+    "test": "vitest --coverage --coverage.include src --coverage.all --typecheck.enabled"
+  },
+  "files": [
+    "src/",
+    "dist/"
+  ],
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./global": {
+      "types": "./dist/global.d.mts"
+    }
+  },
+  "dependencies": {
+    "debug": "^4.3.5",
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/node": "^20.14.9",
+    "@vitest/coverage-v8": "^1.6.0",
+    "eslint": "^9.6.0",
+    "globals": "^15.7.0",
+    "neostandard": "^0.9.0",
+    "pkgroll": "^2.1.1",
+    "typescript": "^5.5.2",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

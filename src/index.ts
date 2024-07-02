@@ -2,6 +2,7 @@ import { createMiddleware } from 'hono/factory'
 import { secondsInADay, type SessionOptions } from './utils'
 import { SessionManager } from './SessionManager'
 import { Session } from './Session'
+import { defaultEncoder } from './Encoder'
 
 export {
   Session,
@@ -10,12 +11,10 @@ export {
 }
 
 export default function<
-  T extends Record<string, any> = {}
->(_options: SessionOptions) {
-  if (!_options.store && !_options.encoder) {
-    throw new Error('Either an encoder or a store are required')
-  }
+  T extends Record<string, any>
+>(_options?: SessionOptions) {
   const options = {
+    encoder: defaultEncoder,
     autoCommit: true,
     maxAge: 1 * secondsInADay,
     cookieName: 'sid',
@@ -23,6 +22,7 @@ export default function<
     ..._options,
   } as Required<SessionOptions>
   options.cookieOptions.maxAge ??= options.maxAge
+  options.secret ??= String.fromCodePoint(...globalThis.crypto.getRandomValues(new Uint8Array(32)))
 
   return createMiddleware<{
     Variables: { session: Session & T }

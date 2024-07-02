@@ -63,7 +63,12 @@ export class SessionManager {
       return
     }
 
-    const data = await decode(cookie)
+    let data
+    try {
+      data = await decode(cookie, this.options.secret)
+    } catch (err) {
+      this.session = new Session()
+    }
 
     this.session = new Session(data)
   }
@@ -88,7 +93,7 @@ export class SessionManager {
       setCookie(
         this.ctx,
         this.options.cookieName,
-        await encode(this.session.toJSON()),
+        await encode(this.session.toJSON(), this.options.secret),
         this.options.cookieOptions
       )
     }

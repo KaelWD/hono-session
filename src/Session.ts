@@ -1,3 +1,5 @@
+import { debug } from './utils'
+
 export class Session {
   readonly #initialState: string
   #oldFlashKeys?: string[]
@@ -41,6 +43,7 @@ export class Session {
   /** Keep all flashed values for an extra request */
   reflash () {
     if (!this.#oldFlashKeys?.length) return
+    debug('keeping flashed keys', this.#oldFlashKeys, 'and', this._flashKeys)
     const set = [...this.#oldFlashKeys]
     if (this._flashKeys?.length) set.push(...this._flashKeys)
     this._flashKeys = Array.from(new Set(set))
@@ -49,6 +52,7 @@ export class Session {
 
   /** Remove flashed values from the previous request */
   ageFlash () {
+    debug('clearing flashed keys', this.#oldFlashKeys)
     this.#oldFlashKeys?.forEach(key => {
       (this as any)[key] = undefined
     })

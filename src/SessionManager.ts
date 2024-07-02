@@ -1,4 +1,4 @@
-import { SessionOptions } from './utils'
+import { SessionOptions, debug } from './utils'
 import { Session } from './Session'
 import { Context } from 'hono'
 import { getCookie } from 'hono/cookie'
@@ -14,6 +14,7 @@ export class SessionManager {
   ) {}
 
   get () {
+    debug('get', this.session)
     const session = this.session
     if (session) return session
     if (session === false) return null
@@ -22,6 +23,7 @@ export class SessionManager {
   }
 
   set (value: any) {
+    debug('set', value)
     if (value == null) {
       this.session = false
     } else if (typeof value === 'object') {
@@ -32,6 +34,7 @@ export class SessionManager {
   }
 
   create (data?: any, sessionKey?: string) {
+    debug('create session with data', data, 'key', sessionKey)
     this.session = new Session(data)
     if (this.options.store) this.sessionKey = sessionKey || globalThis.crypto.randomUUID()
   }
@@ -76,6 +79,7 @@ export class SessionManager {
   async commit () {
     if (!this.session) {
       if (this.session === false) {
+        debug('removing session', this.sessionKey)
         if (this.options.store) await this.options.store.delete(this.sessionKey!, this.ctx)
         deleteCookie(this.ctx, this.options.cookieName, this.options.cookieOptions)
       }
@@ -83,12 +87,17 @@ export class SessionManager {
     }
 
     this.session.ageFlash()
-    if (!this.session.hasChanged) return
+    if (!this.session.hasChanged) {
+      debug('session has not been changed')
+      return
+    }
 
     if (this.options.store) {
+      debug('saving to store', this.sessionKey)
       await this.options.store.set(this.sessionKey!, this.session.toJSON(), this.ctx)
       setCookie(this.ctx, this.options.cookieName, this.sessionKey!, this.options.cookieOptions)
     } else {
+      debug('saving to cookie')
       const encode = this.options.encoder!.encode
       setCookie(
         this.ctx,

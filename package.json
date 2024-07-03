@@ -19,7 +19,7 @@
     "lint": "eslint src",
     "test": "vitest --coverage --coverage.include src --coverage.all --typecheck.enabled",
     "build": "pkgroll --sourcemap",
-    "prepublishOnly": "npm run lint && npm run test && npm run build"
+    "prepublishOnly": "npm run lint && npm run test run && npm run build"
   },
   "files": [
     "src/",

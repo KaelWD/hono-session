@@ -16,9 +16,10 @@
     "url": "https://github.com/kaelwd/hono-session/issues"
   },
   "scripts": {
-    "build": "pkgroll --sourcemap",
     "lint": "eslint src",
-    "test": "vitest --coverage --coverage.include src --coverage.all --typecheck.enabled"
+    "test": "vitest --coverage --coverage.include src --coverage.all --typecheck.enabled",
+    "build": "pkgroll --sourcemap",
+    "prepublishOnly": "npm run lint && npm run test && npm run build"
   },
   "files": [
     "src/",

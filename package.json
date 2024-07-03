@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "hono-session",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hono cookie-based session middleware",
   "license": "MIT",
   "author": {

@@ -18,7 +18,7 @@
   "scripts": {
     "lint": "eslint src",
     "test": "vitest --coverage --coverage.include src --coverage.all --typecheck.enabled",
-    "build": "pkgroll --sourcemap",
+    "build": "rimraf dist && pkgroll --sourcemap",
     "prepublishOnly": "npm run lint && npm run test run && npm run build"
   },
   "files": [
@@ -50,6 +50,7 @@
     "globals": "^15.7.0",
     "neostandard": "^0.9.0",
     "pkgroll": "^2.1.1",
+    "rimraf": "^5.0.7",
     "typescript": "^5.5.2",
     "vitest": "^1.6.0"
   },

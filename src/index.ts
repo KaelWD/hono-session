@@ -1,13 +1,15 @@
 import { createMiddleware } from 'hono/factory'
-import { secondsInADay, type SessionOptions } from './utils'
+import { secondsInADay } from './utils'
 import { SessionManager } from './SessionManager'
-import { Session } from './Session'
 import { defaultEncoder } from './Encoder'
+import type { Session } from './Session'
+import type { SessionStore, SessionOptions } from './utils'
 
-export {
+export type {
   Session,
   SessionManager,
   SessionOptions,
+  SessionStore,
 }
 
 export default function<

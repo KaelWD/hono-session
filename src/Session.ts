@@ -13,7 +13,7 @@ export class Session {
   constructor (manager: SessionManager, data?: Record<string, any> | null) {
     this.#manager = manager
     this._expires = Date.now() + manager.options.maxAge * 1000
-    this.#isNew = !!data
+    this.#isNew = !data
     Object.assign(this, data)
     this.#initialState = JSON.stringify(this.toJSON())
     this.#oldFlashKeys = this._flashKeys
@@ -42,6 +42,7 @@ export class Session {
 
   renew (maxAge?: number) {
     this._expires = Date.now() + (maxAge ?? this.#manager.options.maxAge) * 1000
+    this.#manager.forceCommit = true
   }
 
   async regenerate () {

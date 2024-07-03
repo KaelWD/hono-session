@@ -1,9 +1,9 @@
-import { expect, test, describe } from 'vitest'
+import { expect, test, describe, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import { createClient } from './setup'
 import session from '../src'
 
-describe('Login session', () => {
+test('Login flow', async () => {
   const app = new Hono()
     .use(session())
     .get('/login', c => {
@@ -19,24 +19,21 @@ describe('Login session', () => {
     })
   const client = createClient(app)
 
-  test('Logging in', async () => {
-    const res = await client.get('/login')
-    expect(res.status).toBe(204)
-    expect(res.headers.getSetCookie()).toEqual([expect.stringMatching(/^sid=[^;]/)])
-  })
+  // Logging in
+  const res1 = await client.get('/login')
+  expect(res1.status).toBe(204)
+  expect(res1.headers.getSetCookie()).toEqual([expect.stringMatching(/^sid=[^;]/)])
 
-  test('Retrieve session', async () => {
-    const res = await client.get('/user')
-    expect(res.status).toBe(200)
-    expect(res.headers.getSetCookie()).toHaveLength(0)
-    expect(await res.text()).toBe('123')
-  })
+  // Retrieve session
+  const res2 = await client.get('/user')
+  expect(res2.status).toBe(200)
+  expect(res2.headers.getSetCookie()).toHaveLength(0)
+  expect(await res2.text()).toBe('123')
 
-  test('Logging out', async () => {
-    const res = await client.get('/logout')
-    expect(res.status).toBe(204)
-    expect(res.headers.getSetCookie()).toEqual([expect.stringContaining('sid=;')])
-  })
+  // Logging out
+  const res3 = await client.get('/logout')
+  expect(res3.status).toBe(204)
+  expect(res3.headers.getSetCookie()).toEqual([expect.stringContaining('sid=;')])
 })
 
 describe('Flash', () => {
@@ -53,24 +50,25 @@ describe('Flash', () => {
     .get('/read-flash', c => {
       return c.body(c.session.foo)
     })
-  const client = createClient(app)
+  let client = createClient(app)
+  beforeEach(() => {
+    client = createClient(app)
+  })
 
   test('Set flash', async () => {
-    const res = await client.get('/flash')
-    expect(res.status).toBe(204)
-    expect(res.headers.getSetCookie()).toEqual([expect.stringMatching(/^sid=[^;]/)])
-  })
+    const res1 = await client.get('/flash')
+    expect(res1.status).toBe(204)
+    expect(res1.headers.getSetCookie()).toEqual([expect.stringMatching(/^sid=[^;]/)])
 
-  test('Retrieve session', async () => {
-    const res = await client.get('/read-flash')
-    expect(res.status).toBe(200)
-    expect(await res.text()).toBe('bar')
-  })
+    // Retrieve session
+    const res2 = await client.get('/read-flash')
+    expect(res2.status).toBe(200)
+    expect(await res2.text()).toBe('bar')
 
-  test('Retrieve session again', async () => {
-    const res = await client.get('/read-flash')
-    expect(res.status).toBe(200)
-    expect(await res.text()).toBe('')
+    // Retrieve session again
+    const res3 = await client.get('/read-flash')
+    expect(res3.status).toBe(200)
+    expect(await res3.text()).toBe('')
   })
 
   test('Reflash', async () => {
@@ -85,12 +83,17 @@ describe('Flash', () => {
   })
 })
 
-describe('Renew', async () => {
+describe('Expiration', () => {
+  const store = new Map()
   const app = new Hono()
-    .use(session())
+    .use(session({ store }))
     .get('/login', c => {
       c.session.userId = '123'
       return c.text(c.session._expires.toString())
+    })
+    .get('/me', c => {
+      if (!c.session.userId) return c.text('Unauthorised', 401)
+      return c.text(c.session.userId)
     })
     .get('/expires', c => {
       c.session.userId = '456'
@@ -100,22 +103,41 @@ describe('Renew', async () => {
       c.session.renew()
       return c.text(c.session._expires.toString())
     })
-  const client = createClient(app)
-  let start: number
-
-  test('Set expiry', async () => {
-    const res = await client.get('/login')
-    start = Number(await res.text())
+  let client = createClient(app)
+  beforeEach(() => {
+    client = createClient(app)
   })
 
-  test('Expiry does not change', async () => {
-    const res = await client.get('/expires')
-    expect(Number(await res.text())).toBe(start)
+  test('Sessions expire', async () => {
+    await client.get('/login')
+    const sid = client.cookies.get('sid')
+    store.set(sid, { _expires: Date.now() - 100, userId: '123' })
+    const res = await client.get('/me')
+    expect(res.status).toBe(401)
   })
 
   test('Renew', async () => {
-    const res = await client.get('/renew')
-    expect(Number(await res.text())).toBeGreaterThan(start)
+    // Set expiry
+    const res1 = await client.get('/login')
+    const start = Number(await res1.text())
+
+    // Expiry does not change
+    await new Promise(resolve => setTimeout(resolve, 10))
+    const res2 = await client.get('/expires')
+    expect(Number(await res2.text())).toBe(start)
+
+    // Renew
+    await new Promise(resolve => setTimeout(resolve, 10))
+    const res3 = await client.get('/renew')
+    expect(Number(await res3.text())).toBeGreaterThan(start)
+  })
+
+  test('Renew expired session', async () => {
+    await client.get('/login')
+    const sid = client.cookies.get('sid')
+    store.set(sid, { _expires: Date.now() - 100 })
+    await client.get('/renew')
+    expect(client.cookies.get('sid')).not.toBe(sid)
   })
 })
 

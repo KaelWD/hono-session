@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 export function createClient (app: Hono<any>) {
   const cookies = new Map<string, string>()
   return {
+    cookies,
     async get (path: string, init?: RequestInit) {
       const res = await app.request(path, {
         ...init,

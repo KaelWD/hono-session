@@ -36,6 +36,11 @@ export class SessionManager {
 
   create (data?: any, sessionKey?: string) {
     debug('create session with data', data, 'key', sessionKey)
+    const expires = data?._expires
+    if (typeof expires === 'number' && expires < Date.now()) {
+      data = undefined
+      sessionKey = undefined
+    }
     this.session = data instanceof Session ? data : new Session(this, data)
     if (this.options.store) this.sessionKey = sessionKey || globalThis.crypto.randomUUID()
   }
@@ -43,16 +48,16 @@ export class SessionManager {
   async initFromStore () {
     if (!this.options.store) return
 
-    this.sessionKey = getCookie(this.ctx, this.options.cookieName)
+    const key = getCookie(this.ctx, this.options.cookieName)
 
-    if (!this.sessionKey) {
+    if (!key) {
       this.create()
       return
     }
 
-    const data = await this.options.store.get(this.sessionKey, this.ctx)
+    const data = await this.options.store.get(key, this.ctx)
 
-    this.session = new Session(this, data)
+    this.create(data, key)
   }
 
   async initFromCookie () {
@@ -63,7 +68,7 @@ export class SessionManager {
     const cookie = getCookie(this.ctx, this.options.cookieName)
 
     if (!cookie) {
-      this.session = new Session(this)
+      this.create()
       return
     }
 
@@ -71,10 +76,10 @@ export class SessionManager {
     try {
       data = await decode(cookie, this.options.secret)
     } catch (err) {
-      this.session = new Session(this)
+      this.create()
     }
 
-    this.session = new Session(this, data)
+    this.create(data)
   }
 
   async regenerate () {
@@ -97,9 +102,9 @@ export class SessionManager {
     }
 
     this.session.ageFlash()
-    if (!this.session.hasChanged) {
+    if (!this.session.hasChanged && !this.session.isNew && !this.forceCommit) {
       debug('session has not been changed')
-      if (!this.forceCommit) return
+      return
     }
 
     if (this.options.store) {

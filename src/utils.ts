@@ -11,7 +11,6 @@ export interface SessionOptions {
   store?: SessionStore | null
   encoder?: Encoder | null
   secret?: string
-  autoCommit?: boolean
   maxAge?: number
   cookieName?: string
   cookieOptions?: CookieOptions

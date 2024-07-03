@@ -1,12 +1,19 @@
 import { debug } from './utils'
+import { SessionManager } from './SessionManager'
 
 export class Session {
+  readonly #manager: SessionManager
   readonly #initialState: string
+  #isNew: boolean
   #oldFlashKeys?: string[]
 
   _flashKeys?: string[]
+  _expires: number
 
-  constructor (data?: Record<string, any> | null) {
+  constructor (manager: SessionManager, data?: Record<string, any> | null) {
+    this.#manager = manager
+    this._expires = Date.now() + manager.options.maxAge * 1000
+    this.#isNew = !!data
     Object.assign(this, data)
     this.#initialState = JSON.stringify(this.toJSON())
     this.#oldFlashKeys = this._flashKeys
@@ -15,6 +22,10 @@ export class Session {
 
   get hasChanged (): boolean {
     return this.#initialState !== JSON.stringify(this.toJSON())
+  }
+
+  get isNew (): boolean {
+    return this.#isNew
   }
 
   toJSON () {
@@ -27,6 +38,14 @@ export class Session {
             : typeof value === 'object' && !Object.keys(value).length)
         ))
     )
+  }
+
+  renew (maxAge?: number) {
+    this._expires = Date.now() + (maxAge ?? this.#manager.options.maxAge) * 1000
+  }
+
+  async regenerate () {
+    return this.#manager.regenerate()
   }
 
   /** Store a value in the session for only the next request */

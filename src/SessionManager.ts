@@ -7,6 +7,7 @@ import { deleteCookie, setCookie } from 'hono/cookie'
 export class SessionManager {
   session?: Session | false
   sessionKey?: string
+  forceCommit = false
 
   constructor (
     public options: Required<SessionOptions>,
@@ -35,7 +36,7 @@ export class SessionManager {
 
   create (data?: any, sessionKey?: string) {
     debug('create session with data', data, 'key', sessionKey)
-    this.session = new Session(data)
+    this.session = data instanceof Session ? data : new Session(this, data)
     if (this.options.store) this.sessionKey = sessionKey || globalThis.crypto.randomUUID()
   }
 
@@ -51,7 +52,7 @@ export class SessionManager {
 
     const data = await this.options.store.get(this.sessionKey, this.ctx)
 
-    this.session = new Session(data)
+    this.session = new Session(this, data)
   }
 
   async initFromCookie () {
@@ -62,7 +63,7 @@ export class SessionManager {
     const cookie = getCookie(this.ctx, this.options.cookieName)
 
     if (!cookie) {
-      this.session = new Session()
+      this.session = new Session(this)
       return
     }
 
@@ -70,10 +71,19 @@ export class SessionManager {
     try {
       data = await decode(cookie, this.options.secret)
     } catch (err) {
-      this.session = new Session()
+      this.session = new Session(this)
     }
 
-    this.session = new Session(data)
+    this.session = new Session(this, data)
+  }
+
+  async regenerate () {
+    const session = this.session
+    this.session = false
+    await this.commit()
+    this.create(session)
+    this.forceCommit = true
+    return this.session as any as Session
   }
 
   async commit () {
@@ -89,7 +99,7 @@ export class SessionManager {
     this.session.ageFlash()
     if (!this.session.hasChanged) {
       debug('session has not been changed')
-      return
+      if (!this.forceCommit) return
     }
 
     if (this.options.store) {

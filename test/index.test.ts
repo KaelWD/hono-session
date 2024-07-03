@@ -84,3 +84,65 @@ describe('Flash', () => {
     expect(await res2.text()).toBe('')
   })
 })
+
+describe('Renew', async () => {
+  const app = new Hono()
+    .use(session())
+    .get('/login', c => {
+      c.session.userId = '123'
+      return c.text(c.session._expires.toString())
+    })
+    .get('/expires', c => {
+      c.session.userId = '456'
+      return c.text(c.session._expires.toString())
+    })
+    .get('/renew', c => {
+      c.session.renew()
+      return c.text(c.session._expires.toString())
+    })
+  const client = createClient(app)
+  let start: number
+
+  test('Set expiry', async () => {
+    const res = await client.get('/login')
+    start = Number(await res.text())
+  })
+
+  test('Expiry does not change', async () => {
+    const res = await client.get('/expires')
+    expect(Number(await res.text())).toBe(start)
+  })
+
+  test('Renew', async () => {
+    const res = await client.get('/renew')
+    expect(Number(await res.text())).toBeGreaterThan(start)
+  })
+})
+
+test('Regenerate', async () => {
+  const store = new Map()
+  const app = new Hono()
+    .use(session({ store }))
+    .get('/login', c => {
+      c.session.userId = '123'
+      return c.body(null, 204)
+    })
+    .get('/regenerate', c => {
+      c.session.regenerate()
+      return c.body(null, 204)
+    })
+  const client = createClient(app)
+
+  const res1 = await client.get('/login')
+  const start = [...store.keys()]
+  expect(start).toHaveLength(1)
+
+  const res2 = await client.get('/regenerate')
+  const end = [...store.keys()]
+  expect(end).toHaveLength(1)
+
+  expect(start).not.toBe(end)
+
+  expect(res2.headers.getSetCookie()).toHaveLength(1)
+  expect(res1.headers.getSetCookie()).not.toEqual(res2.headers.getSetCookie())
+})

@@ -15,10 +15,13 @@ export default function<
 >(_options?: SessionOptions) {
   const options = {
     encoder: defaultEncoder,
-    autoCommit: true,
     maxAge: 1 * secondsInADay,
     cookieName: 'sid',
-    cookieOptions: {},
+    cookieOptions: {
+      secure: true,
+      httpOnly: true,
+      ..._options?.cookieOptions,
+    },
     ..._options,
   } as Required<SessionOptions>
   options.cookieOptions.maxAge ??= options.maxAge

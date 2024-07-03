@@ -22,6 +22,7 @@ export default function<
     cookieOptions: {
       secure: true,
       httpOnly: true,
+      path: '/',
       ..._options?.cookieOptions,
     },
     ..._options,

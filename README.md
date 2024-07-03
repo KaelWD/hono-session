@@ -31,7 +31,7 @@ Session expiry in seconds.
 
 #### `cookieName` (default "sid")
 
-#### `cookieOptions` (default secure, httpOnly)
+#### `cookieOptions` (default secure, httpOnly, path=/)
 
 ### Session properties
 

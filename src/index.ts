@@ -19,13 +19,12 @@ export default function<
     encoder: defaultEncoder,
     maxAge: 1 * secondsInADay,
     cookieName: 'sid',
+    ..._options,
     cookieOptions: {
       secure: true,
       httpOnly: true,
-      path: '/',
       ..._options?.cookieOptions,
     },
-    ..._options,
   } as Required<SessionOptions>
   options.cookieOptions.maxAge ??= options.maxAge
   options.secret ??= String.fromCodePoint(...globalThis.crypto.getRandomValues(new Uint8Array(32)))

@@ -51,7 +51,7 @@ export default function<
         if (key === 'session') {
           return manager.get()
         }
-        get(key as any)
+        return get(key as any)
       },
       enumerable: true,
       configurable: true,

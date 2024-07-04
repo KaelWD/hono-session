@@ -102,7 +102,7 @@ export class SessionManager {
     }
 
     this.session.ageFlash()
-    if (!this.session.hasChanged && !this.session.isNew && !this.forceCommit) {
+    if (!this.session.hasChanged && !this.forceCommit) {
       debug('session has not been changed')
       return
     }

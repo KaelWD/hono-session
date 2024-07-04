@@ -34,6 +34,12 @@ test('Login flow', async () => {
   const res3 = await client.get('/logout')
   expect(res3.status).toBe(204)
   expect(res3.headers.getSetCookie()).toEqual([expect.stringContaining('sid=;')])
+
+  // Retrieve session
+  const res4 = await client.get('/user')
+  expect(res4.status).toBe(200)
+  expect(res4.headers.getSetCookie()).toHaveLength(0)
+  expect(await res4.text()).toBe('')
 })
 
 describe('Flash', () => {

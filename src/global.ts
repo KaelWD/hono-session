@@ -7,8 +7,8 @@ declare module 'hono' {
   interface Context<E> {
     get session (): 0 extends (1 & E)
       ? Session
-      : E extends { Variables: {} }
-        ? E['Variables']['session']
+      : E extends { Variables: { session: infer S } }
+        ? S
         : Session
     set session (value: null)
   }

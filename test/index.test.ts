@@ -22,7 +22,9 @@ test('Login flow', async () => {
   // Logging in
   const res1 = await client.get('/login')
   expect(res1.status).toBe(204)
-  expect(res1.headers.getSetCookie()).toEqual([expect.stringMatching(/^sid=[^;]/)])
+  expect(res1.headers.getSetCookie()).toStrictEqual(
+    expect.arrayContaining([expect.stringMatching(/^sid=[^;]/), expect.stringContaining('sx=1;')])
+  )
 
   // Retrieve session
   const res2 = await client.get('/user')
@@ -33,7 +35,9 @@ test('Login flow', async () => {
   // Logging out
   const res3 = await client.get('/logout')
   expect(res3.status).toBe(204)
-  expect(res3.headers.getSetCookie()).toEqual([expect.stringContaining('sid=;')])
+  expect(res3.headers.getSetCookie()).toStrictEqual(
+    expect.arrayContaining([expect.stringContaining('sid=;'), expect.stringContaining('sx=;')])
+  )
 
   // Retrieve session
   const res4 = await client.get('/user')
@@ -64,7 +68,9 @@ describe('Flash', () => {
   test('Set flash', async () => {
     const res1 = await client.get('/flash')
     expect(res1.status).toBe(204)
-    expect(res1.headers.getSetCookie()).toEqual([expect.stringMatching(/^sid=[^;]/)])
+    expect(res1.headers.getSetCookie()).toStrictEqual(
+      expect.arrayContaining([expect.stringMatching(/^sid=[^;]/), expect.stringContaining('sx=1;')])
+    )
 
     // Retrieve session
     const res2 = await client.get('/read-flash')
@@ -144,6 +150,7 @@ describe('Expiration', () => {
     store.set(sid, { _expires: Date.now() - 100 })
     await client.get('/renew')
     expect(client.cookies.get('sid')).not.toBe(sid)
+    expect(client.cookies.get('sx')).toBe('1')
   })
 })
 
@@ -162,15 +169,17 @@ test('Regenerate', async () => {
   const client = createClient(app)
 
   const res1 = await client.get('/login')
+  const sid1 = client.cookies.get('sid')
   const start = [...store.keys()]
   expect(start).toHaveLength(1)
 
   const res2 = await client.get('/regenerate')
+  const sid2 = client.cookies.get('sid')
   const end = [...store.keys()]
   expect(end).toHaveLength(1)
 
-  expect(start).not.toBe(end)
-
-  expect(res2.headers.getSetCookie()).toHaveLength(1)
-  expect(res1.headers.getSetCookie()).not.toEqual(res2.headers.getSetCookie())
+  expect(sid2).not.toBe(sid1)
+  expect(start).not.toStrictEqual(end)
+  expect(res2.headers.getSetCookie()).toHaveLength(2)
+  expect(res1.headers.getSetCookie()).not.toStrictEqual(res2.headers.getSetCookie())
 })

@@ -92,11 +92,14 @@ export class SessionManager {
   }
 
   async commit () {
+    const existsCookieOptions = { ...this.options.cookieOptions, httpOnly: false }
+
     if (!this.session) {
       if (this.session === false) {
         debug('removing session', this.sessionKey)
         if (this.options.store) await this.options.store.delete(this.sessionKey!, this.ctx)
         deleteCookie(this.ctx, this.options.cookieName, this.options.cookieOptions)
+        deleteCookie(this.ctx, this.options.existsCookieName, existsCookieOptions)
       }
       return
     }
@@ -111,6 +114,7 @@ export class SessionManager {
       debug('saving to store', this.sessionKey)
       await this.options.store.set(this.sessionKey!, this.session.toJSON(), this.ctx)
       setCookie(this.ctx, this.options.cookieName, this.sessionKey!, this.options.cookieOptions)
+      setCookie(this.ctx, this.options.existsCookieName, '1', existsCookieOptions)
     } else {
       debug('saving to cookie')
       const encode = this.options.encoder!.encode
@@ -120,6 +124,7 @@ export class SessionManager {
         await encode(this.session.toJSON(), this.options.secret),
         this.options.cookieOptions
       )
+      setCookie(this.ctx, this.options.existsCookieName, '1', existsCookieOptions)
     }
   }
 }

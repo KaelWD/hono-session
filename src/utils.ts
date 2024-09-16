@@ -13,6 +13,7 @@ export interface SessionOptions {
   secret?: string
   maxAge?: number
   cookieName?: string
+  existsCookieName?: string
   cookieOptions?: CookieOptions
 }
 

@@ -1,3 +1,4 @@
+import '../src/global'
 import { Hono } from 'hono'
 
 export function createClient (app: Hono<any>) {

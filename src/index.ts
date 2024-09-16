@@ -19,6 +19,7 @@ export default function<
     encoder: defaultEncoder,
     maxAge: 1 * secondsInADay,
     cookieName: 'sid',
+    existsCookieName: 'sx',
     ..._options,
     cookieOptions: {
       secure: true,

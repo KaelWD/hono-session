@@ -31,7 +31,15 @@ Session expiry in seconds.
 
 #### `cookieName` (default "sid")
 
+The name of the cookie holding the session id or data.
+
+#### `existsCookieName` (default "sx")
+
+The name of a cookie that is set to "1" if a session exists, auth checks can be assumed to fail if not set. This will always have httpOnly=false regardless of cookieOptions.
+
 #### `cookieOptions` (default secure, httpOnly, path=/)
+
+Options for both cookie types, passed directly to hono's `setCookie()`.
 
 ### Session properties
 

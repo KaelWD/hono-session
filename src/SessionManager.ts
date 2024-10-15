@@ -92,7 +92,11 @@ export class SessionManager {
   }
 
   async commit () {
-    const existsCookieOptions = { ...this.options.cookieOptions, httpOnly: false }
+    const existsCookieOptions = {
+      ...this.options.cookieOptions,
+      ...this.options.existsCookieOptions,
+      httpOnly: false,
+    }
 
     if (!this.session) {
       if (this.session === false) {

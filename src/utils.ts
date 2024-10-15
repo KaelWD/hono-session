@@ -15,6 +15,7 @@ export interface SessionOptions {
   cookieName?: string
   existsCookieName?: string
   cookieOptions?: CookieOptions
+  existsCookieOptions?: CookieOptions
 }
 
 export type MaybePromise<T> = T | Promise<T>

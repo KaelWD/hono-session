@@ -39,7 +39,11 @@ The name of a cookie that is set to "1" if a session exists, auth checks can be 
 
 #### `cookieOptions` (default secure, httpOnly, path=/)
 
-Options for both cookie types, passed directly to hono's `setCookie()`.
+Options for both cookie types, passed directly to hono's [`setCookie()`](https://hono.dev/docs/helpers/cookie#options).
+
+#### `existsCookieOptions` (default cookieOptions)
+
+Custom options for the exists cookie, will be merged with `cookieOptions`. If you have hono on "api.example.com" and a static frontend on "example.com" or another subdomain you will have to set `existsCookieOptions: { domain: 'example.com' }` to be able to read it from `document.cookie`.
 
 ### Session properties
 

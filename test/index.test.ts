@@ -1,7 +1,7 @@
 import { expect, test, describe, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import { createClient } from './setup'
-import session from '../src'
+import session, { requireSession } from '../src'
 
 test('Login flow', async () => {
   const app = new Hono()
@@ -183,3 +183,63 @@ test('Regenerate', async () => {
   expect(res2.headers.getSetCookie()).toHaveLength(2)
   expect(res1.headers.getSetCookie()).not.toStrictEqual(res2.headers.getSetCookie())
 })
+
+describe('Require Session Middleware', async () => {
+  test('requireSession', async () => {
+    const app = new Hono()
+    .use(session())
+    .get('/login', c => {
+      c.session.userId = '123'
+      return c.body(null, 204)
+    })
+    .use(requireSession())
+    .get('/user', c => {
+      return c.body(c.session.userId)
+    })
+    .get('/logout', c => {
+      c.session = null
+      return c.body(null, 204)
+    })
+    const client = createClient(app)
+
+    // Check unauthorized routes
+    const res1 = await client.get('/user')
+    expect(res1.status).toBe(401)
+    expect(await res1.text()).toBe('Unauthorized')
+
+    // Login and check again
+    await client.get('/login')
+    const res2 = await client.get('/user')
+    expect(res2.status).toBe(200)
+    expect(await res2.text()).toBe('123')
+  })
+
+  test('requireSession - Custom Opts', async () => {
+    const app = new Hono()
+    .use(session())
+    .get('/login', c => {
+      c.session.userId = '123'
+      return c.body(null, 204)
+    })
+    .use(requireSession({ statusCode: 301, message: 'You are not authorized' }))
+    .get('/user', c => {
+      return c.body(c.session.userId)
+    })
+    .get('/logout', c => {
+      c.session = null
+      return c.body(null, 204)
+    })
+    const client = createClient(app)
+
+    // Check unauthorized routes
+    const res1 = await client.get('/user')
+    expect(res1.status).toBe(301)
+    expect(await res1.text()).toBe('You are not authorized')
+
+    // Login and check again
+    await client.get('/login')
+    const res2 = await client.get('/user')
+    expect(res2.status).toBe(200)
+    expect(await res2.text()).toBe('123')
+  })
+});

@@ -9,8 +9,8 @@ dependencies:
     specifier: ^4.3.5
     version: 4.3.5
   hono:
-    specifier: ^4.5.11
-    version: 4.5.11
+    specifier: ^4.8.5
+    version: 4.8.5
   iron-webcrypto:
     specifier: ^1.2.1
     version: 1.2.1
@@ -1933,9 +1933,9 @@ packages:
       function-bind: 1.1.2
     dev: true
 
-  /hono@4.5.11:
-    resolution: {integrity: sha512-62FcjLPtjAFwISVBUshryl+vbHOjg8rE4uIK/dxyR8GpLztunZpwFmfEvmJCUI7xoGh/Sr3CGCDPCmYxVw7wUQ==}
-    engines: {node: '>=16.0.0'}
+  /hono@4.8.5:
+    resolution: {integrity: sha512-Up2cQbtNz1s111qpnnECdTGqSIUIhZJMLikdKkshebQSEBcoUKq6XJayLGqSZWidiH0zfHRCJqFu062Mz5UuRA==}
+    engines: {node: '>=16.9.0'}
     dev: false
 
   /html-escaper@2.0.2:

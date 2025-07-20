@@ -4,6 +4,7 @@ import { SessionManager } from './SessionManager'
 import { defaultEncoder } from './Encoder'
 import type { Session } from './Session'
 import type { SessionStore, SessionOptions } from './utils'
+import { requireSession } from './RequireSession'
 
 export type {
   Session,
@@ -11,6 +12,8 @@ export type {
   SessionOptions,
   SessionStore,
 }
+
+export { requireSession }
 
 export default function<
   T extends Record<string, any>

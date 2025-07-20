@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "debug": "^4.3.5",
-    "hono": "^4.0.0",
+    "hono": "^4.8.5",
     "iron-webcrypto": "^1.2.1"
   },
   "devDependencies": {

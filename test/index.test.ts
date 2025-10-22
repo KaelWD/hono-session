@@ -183,3 +183,38 @@ test('Regenerate', async () => {
   expect(res2.headers.getSetCookie()).toHaveLength(2)
   expect(res1.headers.getSetCookie()).not.toStrictEqual(res2.headers.getSetCookie())
 })
+
+test('Regenerate with new data', async () => {
+  const store = new Map()
+  const app = new Hono()
+    .use(session({ store }))
+    .get('/init', c => {
+      c.session.init = true
+      return c.body(null, 204)
+    })
+    .get('/login', async c => {
+      c.session.userId = '123'
+      await c.session.regenerate()
+      return c.body(null, 204)
+    })
+    .get('/verify', c => {
+      return c.json({
+        init: c.session.init,
+        userId: c.session.userId,
+      })
+    })
+  const client = createClient(app)
+
+  await client.get('/init')
+  const sid1 = client.cookies.get('sid')
+  await client.get('/login')
+  const sid2 = client.cookies.get('sid')
+
+  expect(sid2).not.toBe(sid1)
+
+  const res = await client.get('/verify').then(r => r.json())
+  expect(res).toStrictEqual({
+    init: true,
+    userId: '123',
+  })
+})

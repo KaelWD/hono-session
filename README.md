@@ -159,7 +159,7 @@ function verifySession () {
   return createMiddleware<{
     Variables: {
       user: User,
-      Session: {
+      session: {
         userId: string
       }
     }

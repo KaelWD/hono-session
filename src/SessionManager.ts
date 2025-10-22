@@ -1,8 +1,7 @@
 import { SessionOptions, debug } from './utils'
 import { Session } from './Session'
 import { Context } from 'hono'
-import { getCookie } from 'hono/cookie'
-import { deleteCookie, setCookie } from 'hono/cookie'
+import { getCookie, deleteCookie, setCookie } from 'hono/cookie'
 
 export class SessionManager {
   session?: Session | false

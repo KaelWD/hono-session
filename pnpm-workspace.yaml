@@ -1,3 +1,8 @@
 autoInstallPeers: false
-minimumReleaseAge: 4320 # 3 days
+
+minimumReleaseAge: 4320
+
+patchedDependencies:
+  iron-webcrypto: patches/iron-webcrypto.patch
+
 shellEmulator: true

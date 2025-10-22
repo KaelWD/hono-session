@@ -1,5 +1,5 @@
 import { createMiddleware } from 'hono/factory'
-import { secondsInADay } from './utils'
+import { IsAny, secondsInADay } from './utils'
 import { SessionManager } from './SessionManager'
 import { defaultEncoder } from './Encoder'
 import type { Session } from './Session'
@@ -10,6 +10,25 @@ export type {
   SessionManager,
   SessionOptions,
   SessionStore,
+}
+
+export namespace HonoSession {
+  export interface isGlobal {}
+}
+
+declare module 'hono' {
+  interface Context<E> {
+    get session (): IsAny<E> extends true
+      ? HonoSession.isGlobal extends { enabled: true }
+        ? Session
+        : never
+      : E extends { Variables: { session: infer S } }
+        ? S
+        : HonoSession.isGlobal extends { enabled: true }
+          ? Session
+          : never
+    set session (value: null)
+  }
 }
 
 export default function<

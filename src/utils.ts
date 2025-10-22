@@ -25,3 +25,5 @@ export interface SessionStore {
   set: (sid: string, data: Record<string, any>, c: Context) => MaybePromise<unknown>
   delete: (sid: string, c: Context) => MaybePromise<unknown>
 }
+
+export type IsAny<T> = boolean extends (T extends never ? true : false) ? true : false
